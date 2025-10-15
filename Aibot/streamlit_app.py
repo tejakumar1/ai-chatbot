@@ -6,7 +6,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from user_agents import parse as ua_parse
 import pandas as pd
-from opik import track, configure, Agent  # <-- Import Agent here
+from opik import track, configure, Agent 
 
 # ---------------- Load Environment ----------------
 load_dotenv()
@@ -181,3 +181,4 @@ if os.path.exists(TRACE_FILE):
     st.download_button("Download Traces as JSON", data=json_data, file_name="local_traces.json")
 else:
     st.info("No trace file found yet.")
+
