@@ -6,21 +6,20 @@ import streamlit as st
 from dotenv import load_dotenv
 from user_agents import parse as ua_parse
 import pandas as pd
-from opik import track, configure
-import openai
+from opik import track, configure, Agent  # <-- Import Agent here
 
 # ---------------- Load Environment ----------------
 load_dotenv()
 
 # Azure OpenAI configuration
-openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
-openai.api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
-openai.api_type = "azure"
-openai.api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2025-01-01-preview")
+openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+openai_api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
+openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2025-01-01-preview")
 deployment_name = os.getenv("GPT_DEPLOYMENT_NAME", "gpt-4o-mini")
 
 # ---------------- Configure Local OPIK ----------------
 configure(use_local=True)
+
 TRACE_FILE = "local_traces.json"
 
 if os.path.exists(TRACE_FILE):
@@ -28,6 +27,13 @@ if os.path.exists(TRACE_FILE):
         saved_traces = json.load(f)
 else:
     saved_traces = []
+
+# ---------------- Initialize Agent ----------------
+agent = Agent(
+    deployment=deployment_name,
+    model_type="chat",
+    # You can add more parameters like temperature, max_tokens here if you want
+)
 
 # ---------------- Streamlit UI ----------------
 st.set_page_config(page_title="AI Multi-Agent Dashboard", layout="wide")
@@ -80,16 +86,13 @@ def file_reader(file_path: str) -> str:
 
 def generate_response(prompt: str) -> str:
     """
-    Generates a real AI response using Azure OpenAI Chat Completions.
+    Generates a real AI response using the OPIK Agent SDK.
     """
     try:
-        response = openai.chat.completions.create(
-            model=deployment_name, 
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content
+        result = agent.run(prompt)
+        return result.content
     except Exception as e:
-        return f"OpenAI call error: {e}"
+        return f"Agent call error: {e}"
 
 # ---------------- Display Previous Messages ----------------
 for msg in st.session_state.messages:
@@ -106,7 +109,7 @@ if prompt := st.chat_input("Ask a question..."):
 
     metadata = get_user_metadata()
     metadata["session_id"] = st.session_state.session_id
-    metadata["turn"] = len(st.session_state.messages)//2 + 1
+    metadata["turn"] = len(st.session_state.messages) // 2 + 1
 
     @track(project_name="local_project", metadata={"prompt": prompt, **metadata})
     def process_turn():
@@ -116,8 +119,8 @@ if prompt := st.chat_input("Ask a question..."):
             response_texts.append(f"Calculator Result: {python_calculator(prompt)}")
         if "read file" in prompt.lower() or "open file" in prompt.lower():
             response_texts.append(f"File Content:\n{file_reader('example.txt')}")
-        
-        # Real AI-generated response
+
+        # Use the OPIK Agent for AI response
         response_texts.append(f"AI Response:\n{generate_response(prompt)}")
         return "\n\n".join(response_texts)
 
@@ -178,12 +181,3 @@ if os.path.exists(TRACE_FILE):
     st.download_button("Download Traces as JSON", data=json_data, file_name="local_traces.json")
 else:
     st.info("No trace file found yet.")
-
-
-
-
-
-
-
-
-
