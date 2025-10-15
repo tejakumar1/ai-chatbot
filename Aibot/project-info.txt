@@ -1,0 +1,232 @@
+PS C:\Users\teja\Desktop\Aibot> 
+$env:AZURE_OPENAI_API_KEY="726WoJruf3CtnvJbpF4YQarspGo2wvAWQv2dGc8J6Ihx4mPIKM2qJQQJ99BDACHYHv6XJ3w3AAAAACOGIsap"
+$env:AZURE_OPENAI_ENDPOINT="https://jon-m900oi9e-eastus2.cognitiveservices.azure.com/"
+$env:GPT_DEPLOYMENT_NAME="gpt-4o-mini"
+$env:OPIK_API_KEY="BJEVL1PR8pwwEpvWwW5hCHnyv"
+$env:OPIK_WORKSPACE_NAME="tejakumar1"
+$env:OPIK_PROJECT_NAME="my-ai-app"
+python -m streamlit run streamlit_app.py
+
+AZURE_OPENAI_API_KEY = "726WoJruf3CtnvJbpF4YQarspGo2wvAWQv2dGc8J6Ihx4mPIKM2qJQQJ99BDACHYHv6XJ3w3AAAAACOGIsap"
+AZURE_OPENAI_ENDPOINT = "https://jon-m900oi9e-eastus2.cognitiveservices.azure.com/"
+AZURE_OPENAI_API_VERSION = "2025-01-01-preview"
+GPT_DEPLOYMENT_NAME = "gpt-4o-mini"
+
+
+
+
+
+
+
+```markdown
+# 🤖 AI Multi-Agent Dashboard (with Local Opik Tracing)
+
+An interactive **AI Chat Dashboard** built using **Streamlit**, **Azure OpenAI**, and **Opik-style local tracing**.  
+This project allows users to chat with an AI assistant, perform simple calculations, read files, and view **locally stored conversation traces** — all in one clean dashboard.
+
+---
+
+## 🚀 Features
+
+- 🧠 **Real AI Responses** via Azure OpenAI (Chat Completions API)
+- 💾 **Local Trace Logging** using Opik’s `@track` decorator
+- 🧮 **Built-in Python Calculator**
+- 📂 **File Reader Utility**
+- 🌍 **Automatic Device & Location Metadata**
+- 📊 **Trace Dashboard** with filtering and search
+- 🧾 **Downloadable JSON Logs** for all sessions
+
+---
+
+## 🏗️ Project Structure
+
+```
+
+ai-chatbot/
+│
+├── aibot/
+│   ├── streamlit_app.py      # Main Streamlit app
+│   ├── example.txt           # Example file for file reading
+│   └── local_traces.json     # Local trace data (auto-created)
+│
+├── .env                      # Environment variables (see below)
+├── requirements.txt          # Python dependencies
+└── README.md                 # Project documentation
+
+````
+
+---
+
+## ⚙️ Prerequisites
+
+Before running the app, make sure you have:
+
+- Python **3.9+**
+- Docker (if running local Opik UI)
+- Azure OpenAI resource (with deployment name, endpoint, and API key)
+- Internet connection
+
+---
+
+## 📦 Installation Steps
+
+### 1️⃣ Clone the repository
+```bash
+git clone https://github.com/your-username/ai-chatbot.git
+cd ai-chatbot/aibot
+````
+
+### 2️⃣ Create and activate virtual environment
+
+```bash
+python -m venv venv
+venv\Scripts\activate  # On Windows
+# OR
+source venv/bin/activate  # On macOS/Linux
+```
+
+### 3️⃣ Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Example `requirements.txt`:
+
+```text
+streamlit
+python-dotenv
+opik
+openai
+pandas
+user-agents
+requests
+asteval
+```
+
+---
+
+## 🔑 Configure Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+AZURE_OPENAI_API_KEY=your_azure_api_key
+AZURE_OPENAI_ENDPOINT=https://your-azure-endpoint.openai.azure.com/
+AZURE_OPENAI_API_VERSION=2025-01-01-preview
+GPT_DEPLOYMENT_NAME=gpt-4o-mini
+```
+
+---
+
+## 🧩 How to Run the App
+
+Start Streamlit:
+
+```bash
+streamlit run streamlit_app.py
+```
+
+Then open the URL displayed in the terminal (usually [http://localhost:8501](http://localhost:8501)).
+
+---
+
+## 💬 How It Works
+
+1. User enters a question in the chat input.
+2. The app checks:
+
+   * If the input contains “calculate” → executes math expression.
+   * If it contains “read file” → reads from `example.txt`.
+   * Otherwise → sends to **Azure OpenAI** and returns real AI response.
+3. Each conversation turn (user + AI) is tracked using **Opik’s `@track` decorator**.
+4. All data — messages, timestamps, metadata — are saved to **`local_traces.json`**.
+5. A dashboard at the bottom displays all past traces with filters and search.
+6. You can **download** all traces as a `.json` file for later analysis.
+
+---
+
+## 🧠 Opik Integration (Local Tracing)
+
+* The app uses `configure(use_local=True)` to store traces locally.
+* You can later import or view them through your **local Opik Docker dashboard** (default: [http://localhost:5173](http://localhost:5173)).
+
+To run Opik locally:
+
+```bash
+docker run -d -p 5173:5173 cometml/opik
+```
+
+Then visit:
+👉 [http://localhost:5173](http://localhost:5173)
+
+---
+
+## 🧰 Example User Flow
+
+| Input             | Output                            |
+| ----------------- | --------------------------------- |
+| `Calculate 5*4+3` | `Calculator Result: 23`           |
+| `Read file`       | Displays content of `example.txt` |
+| `What is AI?`     | AI response from Azure OpenAI     |
+| `Show traces`     | Opens trace dashboard at bottom   |
+
+---
+
+## 📊 Local Trace Dashboard
+
+The dashboard includes:
+
+* Session ID filter
+* Role filter (User / Assistant)
+* Search bar for message text
+* Expandable trace details
+* Metadata (IP, device, location, timestamp)
+
+Traces are saved automatically in:
+
+```
+aibot/local_traces.json
+```
+
+---
+
+## 💾 Downloading Traces
+
+At the bottom of the Streamlit app:
+
+* Click **“Download Traces as JSON”**
+* Saves all stored interactions as a single file
+
+---
+
+## 🧑‍💻 For Developers
+
+* All AI calls use the **Azure OpenAI Python SDK** (`openai.chat.completions.create`)
+* Supports multiple local agents (Calculator, File Reader, and AI Assistant)
+* Easy to extend with new agent types (e.g., Image Generator, Translator, etc.)
+
+---
+
+## 🪄 Future Enhancements
+
+* 🔗 Multi-agent coordination
+* 🧩 Cloud Opik workspace integration
+* 📈 Analytics charts for session performance
+* 🔐 Secure login for personal trace views
+
+---
+
+## 👨‍💻 Author
+
+**Developed by:** Teja
+**Project:** AI Multi-Agent Dashboard
+**Platform:** Streamlit + Azure OpenAI + Opik
+**Year:** 2025
+
+---
+
+## 🪪 License
+
+This project is open-source under the **MIT License**.
+You can freely use, modify, and distribute it with attribution.
